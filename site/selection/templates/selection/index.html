@@ -1,0 +1,111 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block style %}
+<style>
+    .selection-status-1 { background-color: #95a5a6; } /* Gray */
+    .selection-status-2 { background-color: #3498db; } /* Blue */
+    .selection-status-3 { background-color: #2ecc71; } /* Green */
+    .selection-status-4 { background-color: #e74c3c; } /* Red */
+
+    h3, label {
+        color: #212529;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+
+
+<div class="row">
+    <div class="col-8">
+        <h3 class="mb-4">Ваші підбори</h3>
+        {% for selection in selections %}
+        <div class="card mb-3">
+            <h6 class="card-header d-flex justify-content-between">
+                <div class="selection_request_time">
+                    {{ selection.requested_at }}
+                </div>
+                <div class="selection_request_car">
+                    {{ selection.to_car.name }}
+                </div>
+                <div class="selection_request_status">
+                    <span class="badge selection-status-{{selection.status}}">{{ selection.get_status_display }}</span>
+                </div>
+            </h6>
+        
+            <div class="row">
+                <div class="selection_data col-8">
+                    <div class="card-body">
+                        <h5 class="card-title">Запит:</h5>
+                        <p class="card-text">- {{ selection.text }}</p>
+                
+                        {% if selection.response %}
+                        <h5 class="card-title">Відповідь:</h5>
+                        <p class="card-text">- {{ selection.response.text }}</p>
+                        
+                        {% if selection.is_response_processed %}
+                        <div>
+                            <form class="d-inline" method="POST" action="{% url 'selection:accept' selection.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-success">Додати товари до корзини</button>
+                            </form>
+                            <form class="d-inline" method="POST" action="{% url 'selection:refuse' selection.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger">Відхилити підбір</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                
+                    </div>
+                </div>
+                {% if selection.response.proposal %}
+                <div class="selection_goods col-4">
+                    <h5 class="card-title mt-3">Підібрані товари:</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for proposal in selection.response.proposal.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                          {{ proposal.name }}
+                          <span class="badge bg-primary rounded-pill">{{ proposal.sell_price }} грн.</span>
+                        </li>
+                        {% endfor %}
+                      </ul>
+                </div>
+                {% endif %}
+            </div>
+        
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="col-4">
+        <h3 class="mb-4">Заявка на підбір</h3>
+        <form method="post" action="{% url 'selection:request' %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label class="form-label" for="{{ form.to_car.id_for_label }}">Оберіть авто</label>
+              {% render_field form.to_car class="form-control" %}
+              {% if form.to_car.errors %}
+                <small class="text-danger">{{ form.to_car.errors.0 }}</small>
+              {% endif %}
+            </div>
+          
+            <div class="form-group">
+              <label class="form-label" for="{{ form.text.id_for_label }}">Вкажіть детально що вам потрібно та іншу додаткову інформацію</label>
+              {% render_field form.text class="form-control" %}
+              {% if form.text.errors %}
+                <small class="text-danger">{{ form.text.errors.0 }}</small>
+              {% endif %}
+            </div>
+          
+            <button type="submit" class="btn btn-primary mt-2">Надіслати</button>
+          </form>
+    </div>
+
+</div>
+
+
+{% endblock content %}

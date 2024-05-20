@@ -1,0 +1,108 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Статистика | FDA.if{% endblock title %}
+
+{% block style %}
+  <style>
+    h3, h6 {
+        color: #212529;
+    }
+  </style>
+{% endblock style %}
+
+{% block head-scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock head-scripts %}
+
+
+{% block content %}
+
+<h3 class="text-center mb-5">Прибуток: {{ total_margin }}</h3>
+<div class="row">
+    <div class="custom col-2">
+        <h6>Статистика за:</h6>
+        <div class="ranges btn-group-vertical w-100">
+            {% for range in stat_ranges %}
+                <a role="button" class="btn w-100 btn-light{% if request.GET.from == range.from and request.GET.to == range.to %} active {% endif %}"
+                href="{% url 'stats:index' %}?from={{ range.from }}&to={{ range.to }}">{{ range.label }}</a>
+            {% endfor %}
+        </div>
+
+        <h6 class="mt-5">Певний проміжок:</h6>
+        <form class="form-inline" method="get" action="{% url 'stats:index' %}">
+            <div class="input-group mb-2">
+                <span class="input-group-text" id="basic-addon1">Із: </span>
+                <input class="form-control" type="date" name="from" id="from" value="{{ request.GET.from }}">
+            </div>
+        
+            <div class="input-group mb-2">
+                <span class="input-group-text" id="basic-addon1">До: </span>
+                <input class="form-control" type="date" name="to" id="to" value="{{ request.GET.to }}">
+            </div>
+        
+            <button type="submit" class="btn btn-primary w-100">Показати</button>
+        </form>
+    </div>
+
+
+    <div class="col-10">
+        <canvas style="background-color: white;" id="myChart"></canvas>
+    </div>
+</div>
+
+<div class="hidden">
+    {% for date, stat_item in stats.items %}
+      
+        <p class="chart_date_value">{{ date }}</p>
+        <p class="chart_sale_value">{{ stat_item.sales }}</p>
+        <p class="chart_margin_values">{{ stat_item.margin }}</p>
+
+    {% endfor %}
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    const ctx = document.getElementById('myChart');
+    let dates = []
+    let sales = []
+    let margins = []
+
+    document.querySelectorAll('.chart_date_value').forEach((el) => {
+        dates.push(el.innerHTML)
+    })
+    document.querySelectorAll('.chart_sale_value').forEach((el) => {
+        sales.push(parseFloat(el.innerHTML))
+    })
+
+    document.querySelectorAll('.chart_margin_values').forEach((el) => {
+        margins.push(parseFloat(el.innerHTML))
+    })
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Продажі',
+                    data: sales,
+                    borderWidth: 2,
+                    fill: true,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.3,
+                },
+                {
+                    label: "Заробіток",
+                    data: margins,
+                    borderWidth: 2,
+                    fill: true,
+                    borderColor: 'rgb(252, 186, 3)',
+                    tension: 0.3,
+                },
+            ]
+        },
+    });
+</script>
+{% endblock scripts %}

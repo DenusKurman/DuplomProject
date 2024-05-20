@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block style %}
+<style>
+    h1, h3, h4, span, b {
+        color: #212529;
+    }
+
+</style>
+{% endblock style %}
+
+{% block content %}
+<h1 class="text-center mb-4">Ваше замовлення:</h1>
+{% if not cart %}
+<h3>Ваша корзина порожня(</h3>
+
+{% else %}
+<div class="checkout row">
+    <div class="products col-7">
+        <h4>Корзина:</h4>
+        <ol class="list-group list-group-numbered">
+            {% for product in cart.products.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                    <a href="{{ product.part.get_absolute_url }}" class="fw-bold">{{ product.part.name }} ({{ product.part.belongs_to.name }})</a><br>
+                    {{ product.total_price }} грн.
+                </div>
+                <form method="post" action="{% url 'store:delete_from_order' %}">
+                    {% csrf_token %}
+                    <span class="badge bg-primary rounded-pill d-block">{{ product.quantity }}</span>
+                    <input type="hidden" name="part_unit_pk" value="{{ product.pk }}">
+                    <input type="submit" class="btn btn-outline-danger btn-sm mt-1" value="X">
+                </form>
+            </li>
+            {% endfor %}
+        </ol>
+        <b>Сумма: </b><span class="badge text-bg-info">{{ cart.total }} грн.</span>
+        <b>Загалом товарів: </b><span class="badge text-bg-success">{{ cart.total_quantity }} шт.</span>
+    </div>
+    <div class="shipping col-5">
+        <h4>Адреса доставки:</h4>
+
+        {% if not shipping %}
+        <span>
+            Адресу не знайдено. Вкажіть адресу доставки в <a class="link-warning" href="{% url 'user:shipping' %}">налаштуваннях доставки</a>
+        </span>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ shipping.first_name }} {{ shipping.last_name }}</h5>
+              <p class="card-text">
+                <strong>Номер телефону:</strong> {{ shipping.phone_number }}<br>
+                <strong>Область:</strong> {{ shipping.region }}<br>
+                <strong>Населений пункт:</strong> {{ shipping.city }}<br>
+                <strong>Номер відділення НП:</strong> {{ shipping.office_number }} <br>
+                <a class="link-primary" href="{% url 'user:shipping' %}">Змінити адресу</a>
+              </p>
+            </div>
+          </div>
+        {% endif %}
+    </div>
+</div>
+<form action="{% url 'store:submit_order' %}" method="POST" class="d-inline">
+    {% csrf_token %}
+    <button class="submit btn btn-sm btn-primary mt-3">Замовити</button>
+</form>
+<form action="{% url 'store:clear_order' %}" method="POST" class="d-inline">
+    {% csrf_token %}
+    <button class="submit btn btn-sm btn-warning mt-3">Очистити кошик</button>
+</form>
+{% endif %}
+{% endblock content %}

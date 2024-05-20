@@ -1,0 +1,21 @@
+services:
+  web: 
+    build:
+      context: ./site
+      dockerfile: Dockerfile
+    container_name: site
+    restart: always
+    ports: 
+      - '8000:8000'
+    volumes:
+      - ./site:/site
+  
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: bot
+    restart: always
+    env_file: ./bot/.env
+    volumes:
+      - ./bot:/bot

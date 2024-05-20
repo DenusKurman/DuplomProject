@@ -1,0 +1,54 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block style %}
+{% endblock style %}
+
+{% block content %}
+<h1 class="text-center">Каталог машин</h1>
+
+<div class="cars">
+    {% for car in cars %}
+    
+    {% if forloop.counter0|divisibleby:2 %}
+    <div class="row">
+    {% endif %}
+
+        <div class="col-md-6">
+            <div href="" class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-8">
+                        <div class="card-body h-100 d-flex flex-column justify-content-between">
+                            <div class="car-head">
+                                <h5 class="card-title">{{ car.producer }} {{ car.model }}</h5>
+                                <p class="card-text">Щось про цю машину.</p>
+                            </div>
+                            <div class="car-actions">
+                                <a href="{% url 'main:parts_catalog' car.pk %}" class="btn btn-primary btn-sm">Каталог деталей</a>
+                                <form class="d-inline" action="{% url 'garage:add_car' car.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="btn btn-secondary btn-sm">Додати в гараж</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><b>📅 Рік випуску: </b>{{ car.year_of_production }}</li>
+                            <li class="list-group-item"><b>🚀 Двигун: </b>{{ car.engine_volume }} л.</li>
+                            <li class="list-group-item"><b>🔄 Привід: </b>{{ car.get_wheel_drive_display }}</li>
+                            <li class="list-group-item"><b>⛽ Паливо: </b>{{ car.get_fuel_display }}</li>
+                            <li class="list-group-item"><b>🏎️ Кузов: </b>{{ car.get_body_display }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% if forloop.counter|divisibleby:2 or forloop.last %}
+    </div>
+    {% endif %}
+
+    {% endfor %}
+</div>
+{% endblock content %}
